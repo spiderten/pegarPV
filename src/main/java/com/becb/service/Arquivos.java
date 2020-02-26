@@ -7,7 +7,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.springframework.stereotype.Service;
 
@@ -31,6 +30,7 @@ public class Arquivos {
 
 	}
 
+	@SuppressWarnings("finally")
 	public List<Dados> lerArquivo(String nome, String arquivo) {
 
 		List<Dados> lDados = new ArrayList<Dados>();
@@ -55,47 +55,39 @@ public class Arquivos {
 
 	}
 
-	public void escreverArquivo(String string) {
+	public void escreverArquivo(String string) throws IOException {
 		Path path = Paths.get(arquivo);
 		try {
-			try {
-
-				Files.write(path, string.getBytes(), StandardOpenOption.APPEND);
-			} catch (java.nio.file.NoSuchFileException e) {
-				Files.write(path, string.getBytes(), StandardOpenOption.CREATE_NEW);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			Files.write(path, string.getBytes(), StandardOpenOption.APPEND);
+		} catch (java.nio.file.NoSuchFileException e) {
+			Files.write(path, string.getBytes(), StandardOpenOption.CREATE_NEW);
 		}
 	}
 
 	public void salvarDados(List<Posto> postos, Dados dados, String arquivo) {
 
-		/* JAVA 5
-		 * this.arquivo = arquivo;  String escrever; 
-		 * for (Posto posto : postos) {
-		 * escrever = dados.getId() + "," + dados.getLatitude() + "," +
-		 * dados.getLongitute() + "," + posto.getId() + "," + posto.getNomeFantasia() +
-		 * "," + posto.getCidade() + "\n";
-		 * 
-		 * escreverArquivo(escrever);
-		 * 
-		 */
+		this.arquivo = arquivo;
+		try {
+			String escrever;
+			for (Posto posto : postos) {
+				escrever = dados.getId() + ";" + dados.getLatitude() + ";" + dados.getLongitute() + ";" + posto.getId()
+						+ ";" + posto.getNomeFantasia() + ";" + posto.getCidade() + "\n";
 
-		//JAVA 8 Consumer 
-		/*
-		 * postos.forEach(new Consumer<Posto>() { public void accept(Posto posto) {
-		 * escreverArquivo( dados.getId() + "," + dados.getLatitude() + "," +
-		 * dados.getLongitute() + "," + posto.getId() + "," + posto.getNomeFantasia() +
-		 * "," + posto.getCidade() + "\n" ); } });
-		 */
-		
-		//Lambda
-		postos.forEach(posto -> 
-				escreverArquivo( dados.getId() + "," + dados.getLatitude() + "," + dados.getLongitute() + ","
-						+ posto.getId() + "," + posto.getNomeFantasia() + "," + posto.getCidade() + "\n"
-			));
+				escreverArquivo(escrever);
 
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void cabecalho(String arquivo) throws IOException {
+		this.arquivo = arquivo;
+		String escrever;
+		escrever = "CD_TOKEN_PED" + ";" + "LATITUDE" + ";" + "LONGITUDE" + ";" + "ID_POSTO" + ";" + "NOME_FANTASIA"
+				+ ";" + "CIDADE" + "\n";
+		escreverArquivo(escrever);
 	}
 
 	public String getArquivo() {
